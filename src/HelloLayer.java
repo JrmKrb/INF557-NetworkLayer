@@ -120,7 +120,6 @@ public class HelloLayer implements Layer {
 	private void handleSendingNeighbor(String name, Link from) {
 		Set<String> neighbors = linkState.neighbors();
 		linkState.put(new LinkEntry(name, from, MAX_HELLO_GRACE));
-		linkState.resetCounter(name, MAX_HELLO_GRACE);
 		if (!neighbors.contains(name))
 			neighbors.add(name);
 	}
@@ -215,6 +214,10 @@ class RegularSendingTask extends TimerTask {
 		for (Link l : underLayers)
 			l.send(HELLO);
 		linkState.decreaseCounters();
+		for (String name : linkState.getDumbNeighbors()) {
+			linkState.remove(name);
+			linkState.neighbors().remove(name);
+		}
 		externalLock.unlock();
 	}
 }
