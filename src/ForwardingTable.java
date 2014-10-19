@@ -106,9 +106,7 @@ public class ForwardingTable {
 		Iterator<RouteEntry> it = table.values().iterator();
 		while (it.hasNext()) {
 			RouteEntry entry = it.next();
-			if (entry.getMetrics() == RouteEntry.INFINITY
-					&& !this.hasUpdated(entry.getDestination()))
-				it.remove();
+			if (entry.getMetrics() == RouteEntry.INFINITY && !this.hasUpdated(entry.getDestination())) it.remove();
 		}
 	}
 
@@ -129,8 +127,7 @@ public class ForwardingTable {
 	 */
 	public void dump(PrintStream out) {
 		out.println("\n Forwarding Table:");
-		if (table.isEmpty())
-			out.println("<empty>");
+		if (table.isEmpty()) out.println("<empty>");
 		for (RouteEntry entry : table.values())
 			out.println(entry);
 		out.println();
@@ -200,48 +197,61 @@ public class ForwardingTable {
 	 * @return a vector, sized and filled according to the specified destination
 	 *         and to the specified Distance-Vector rule
 	 */
-	public String[][] makeVector(String recipient, boolean poisonedReverse,
-			boolean addLost, boolean incremental) {
+	public String[][] makeVector(String recipient, boolean poisonedReverse, boolean addLost, boolean incremental) {
 		touched.clear();
 		String[][] res = new String[table.keySet().size()][2];
-		int i = 0;
-
-		/*
-		 * INITIALISATION
-		 */
-		for (String name : table.keySet()) {
-			res[i][0] = name;
-			res[i][1] = Integer.toString(RouteEntry.INFINITY);
-			i++;
-		}
-		res[getIndex(res, myName)][1] = "0";
-		for (String dest : table.keySet())
-			res[getIndex(res, dest)][1] = Integer.toString(table.get(dest)
-					.getMetrics());
-		/*
-		 * FIN INITIALISATION
-		 */
+		// int i = 0;
+		//
+		// /*
+		// * INITIALISATION
+		// */
+		// for (String name : table.keySet()) {
+		// res[i][0] = name;
+		// res[i][1] = Integer.toString(RouteEntry.INFINITY);
+		// i++;
+		// }
+		// res[getIndex(res, myName)][1] = "0";
+		// for (String dest : table.keySet())
+		// res[getIndex(res, dest)][1] = Integer.toString(table.get(dest)
+		// .getMetrics());
+		// /*
+		// * FIN INITIALISATION
+		// */
 
 		if (recipient == null) {
+			int i = 0;
 			for (String name : table.keySet()) {
-				boolean unchanged = true;
-
+				if ((!addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
+						&& (!incremental || hasUpdated(name))) {
+					res[i][0] = name;
+					res[i][1] = Integer.toString(table.get(name).getMetrics());
+				}
+				i++;
 			}
+			return res;
+		} else {
+			int i = 0;
+			for (String name : table.keySet()) {
+				if ((!addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
+						&& (!incremental || hasUpdated(name)) && (table.get(name).getDestination() != name)) {
+					res[i][0] = name;
+					res[i][1] = Integer.toString(table.get(name).getMetrics());
+				}
+				i++;
+			}
+			return res;
 		}
-		return null; // TO BE MODIFIED
 	}
 
 	public int getIndex(String[][] tab, String name) {
 		for (int i = 0; i < tab.length; i++)
-			if (tab[i][0] == name)
-				return i;
+			if (tab[i][0] == name) return i;
 		return -1;
 	}
 
 	public int getDistance(String[][] tab, String name) {
 		for (int i = 0; i < tab.length; i++)
-			if (tab[i][0] == name)
-				return Integer.parseInt(tab[i][1]);
+			if (tab[i][0] == name) return Integer.parseInt(tab[i][1]);
 		return RouteEntry.INFINITY;
 	}
 
