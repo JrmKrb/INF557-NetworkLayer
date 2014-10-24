@@ -200,47 +200,37 @@ public class ForwardingTable {
 	public String[][] makeVector(String recipient, boolean poisonedReverse, boolean addLost, boolean incremental) {
 		touched.clear();
 		String[][] res = new String[table.keySet().size()][2];
-		// int i = 0;
-		//
-		// /*
-		// * INITIALISATION
-		// */
-		// for (String name : table.keySet()) {
-		// res[i][0] = name;
-		// res[i][1] = Integer.toString(RouteEntry.INFINITY);
-		// i++;
-		// }
-		// res[getIndex(res, myName)][1] = "0";
-		// for (String dest : table.keySet())
-		// res[getIndex(res, dest)][1] = Integer.toString(table.get(dest)
-		// .getMetrics());
-		// /*
-		// * FIN INITIALISATION
-		// */
 
+		int i = 0;
 		if (recipient == null) {
-			int i = 0;
 			for (String name : table.keySet()) {
-				if ((!addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
+				if ((addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
 						&& (!incremental || hasUpdated(name))) {
 					res[i][0] = name;
 					res[i][1] = Integer.toString(table.get(name).getMetrics());
+					i++;
 				}
-				i++;
 			}
-			return res;
 		} else {
-			int i = 0;
 			for (String name : table.keySet()) {
-				if ((!addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
-						&& (!incremental || hasUpdated(name)) && (table.get(name).getDestination() != name)) {
+				if ((addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
+						&& (!incremental || hasUpdated(name)) && (poisonedReverse || table.get(name).getRelay() != recipient) && table.get(name).getDestination() != recipient ) {
 					res[i][0] = name;
-					res[i][1] = Integer.toString(table.get(name).getMetrics());
+					if (poisonedReverse && table.get(name).getRelay() == recipient) res[i][1] = Integer
+							.toString(RouteEntry.INFINITY);
+					else res[i][1] = Integer.toString(table.get(name).getMetrics());
+					i++;
 				}
-				i++;
 			}
-			return res;
 		}
+		if (i != table.keySet().size()) {
+			String[][] res2 = new String[i][2];
+			for (int j = 0; j < i; j++) {
+				res2[j][0] = res[j][0];
+				res2[j][1] = res[j][1];
+			}
+			return res2;
+		} else return res;
 	}
 
 	public int getIndex(String[][] tab, String name) {
