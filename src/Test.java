@@ -3,17 +3,18 @@ public class Test {
 		ForwardingTable table = new ForwardingTable("test", new LinkState());
 
 		// Test routes
-		RouteEntry[] entries = new RouteEntry[] { 
-				new RouteEntry("Alfa", "Alfa", 0),
-				new RouteEntry("Bravo", "Bravo", 1), 
-				new RouteEntry("Charlie", "Charlie", 2),
-				new RouteEntry("Delta", "Zulu", 3),
-				new RouteEntry("Echo", "Zulu", RouteEntry.INFINITY / 2 + 1),
-				new RouteEntry("Foxtrot", "Yankee", 1),
-				new RouteEntry("Golf", "Yankee", RouteEntry.INFINITY),
-				new RouteEntry("Hotel", "Hotel", RouteEntry.INFINITY),
-				new RouteEntry("Yankee", "Yankee", 1), 
-				new RouteEntry("Zulu", "Zulu", 1), };
+		RouteEntry[] entries = new RouteEntry[] {
+		        new RouteEntry("Alfa", "Alfa", 0),
+		        new RouteEntry("Bravo", "Bravo", 1),
+		        new RouteEntry("Charlie", "Charlie", 2),
+		        new RouteEntry("Delta", "Zulu", 3),
+		        new RouteEntry("Echo", "Zulu", RouteEntry.INFINITY / 2 + 1),
+		        new RouteEntry("Foxtrot", "Yankee", 1),
+		        new RouteEntry("Golf", "Yankee", RouteEntry.INFINITY),
+		        new RouteEntry("Hotel", "Hotel", RouteEntry.INFINITY),
+		        new RouteEntry("Yankee", "Yankee", 1),
+		        new RouteEntry("Zulu", "Zulu", 1),
+		    };
 
 		// Fill the table :
 		for(int i=0; i<entries.length; i++)
