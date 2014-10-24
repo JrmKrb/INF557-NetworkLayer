@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import link.Link;
 import packets.NextHopPacket;
 import packets.Packet;
 
@@ -214,7 +213,9 @@ public class ForwardingTable {
 		} else {
 			for (String name : table.keySet()) {
 				if ((addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
-						&& (!incremental || hasUpdated(name)) && (poisonedReverse || table.get(name).getRelay() != recipient) && table.get(name).getDestination() != recipient ) {
+						&& (!incremental || hasUpdated(name))
+						&& (poisonedReverse || table.get(name).getRelay() != recipient)
+						&& table.get(name).getDestination() != recipient) {
 					res[i][0] = name;
 					if (poisonedReverse && table.get(name).getRelay() == recipient) res[i][1] = Integer
 							.toString(RouteEntry.INFINITY);
@@ -264,7 +265,10 @@ public class ForwardingTable {
 	 *            the TTL value for the forwarded packet
 	 */
 	public void forward(Packet payload, int ttl) {
-		// TO BE COMPLETED
+		if (ttl > 0 && table.get(payload.getDestination()).getMetrics() < RouteEntry.INFINITY
+				&& table.get(table.get(payload.getDestination()).getRelay()).getMetrics() < RouteEntry.INFINITY) neighbors
+				.getLinkFor(table.get(payload.getDestination()).getRelay()).send(
+						new NextHopPacket(myName, table.get(payload.getDestination()).getRelay(), ttl--, payload));
 	}
 
 }
