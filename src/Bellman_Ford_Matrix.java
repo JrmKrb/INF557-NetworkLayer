@@ -33,7 +33,15 @@ public class Bellman_Ford_Matrix {
    *         otherwise
    */
   public boolean updateDistance(String destination, String relay, int distance) {
-	  if (forwardingTable.get(destination) == null)
+	  boolean res = false;
+	  if (forwardingTable.get(destination) != null)
+	  {
+		  RouteEntry re = forwardingTable.get(destination);
+		  if (re.getMetrics() != distance || !re.getRelay().equals(relay))
+			  res = true;
+	  }
+	  forwardingTable.put(new RouteEntry(destination,relay, distance));
+	  return res;
     // TO BE COMPLETED
     // retrieve the existing entry
     // does it change something?
@@ -41,7 +49,6 @@ public class Bellman_Ford_Matrix {
     // does it downgrade the previous best route?
     // must seek for an alternate route?
     // touch ForwardingTable accordingly
-    return false;
   }
 
   /**
