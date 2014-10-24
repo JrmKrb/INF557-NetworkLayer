@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import link.Link;
 import packets.NextHopPacket;
 import packets.Packet;
 
@@ -214,10 +215,10 @@ public class ForwardingTable {
 			for (String name : table.keySet()) {
 				if ((addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
 						&& (!incremental || hasUpdated(name))
-						&& (poisonedReverse || table.get(name).getRelay() != recipient)
-						&& table.get(name).getDestination() != recipient) {
+						&& (poisonedReverse || !table.get(name).getRelay().equals(recipient))
+						&& !table.get(name).getDestination().equals(recipient)) {
 					res[i][0] = name;
-					if (poisonedReverse && table.get(name).getRelay() == recipient) res[i][1] = Integer
+					if (poisonedReverse && table.get(name).getRelay().equals(recipient)) res[i][1] = Integer
 							.toString(RouteEntry.INFINITY);
 					else res[i][1] = Integer.toString(table.get(name).getMetrics());
 					i++;
@@ -265,10 +266,15 @@ public class ForwardingTable {
 	 *            the TTL value for the forwarded packet
 	 */
 	public void forward(Packet payload, int ttl) {
-		if (ttl > 0 && table.get(payload.getDestination()).getMetrics() < RouteEntry.INFINITY
-				&& table.get(table.get(payload.getDestination()).getRelay()).getMetrics() < RouteEntry.INFINITY) neighbors
-				.getLinkFor(table.get(payload.getDestination()).getRelay()).send(
-						new NextHopPacket(myName, table.get(payload.getDestination()).getRelay(), ttl--, payload));
+		String plDest = payload.getDestination();
+		RouteEntry re = table.get(plDest);
+		if (re != null) {
+			int plMetrics = re.getMetrics();
+			String plRelay = re.getRelay();
+			Link relayLink = neighbors.getLinkFor(plRelay);
+			if (ttl > 0 && plMetrics < RouteEntry.INFINITY && relayLink != null) neighbors.getLinkFor(plRelay).send(
+					new NextHopPacket(myName, plRelay, ttl, payload));
+		}
 	}
 
 }
