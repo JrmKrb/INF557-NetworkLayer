@@ -198,31 +198,18 @@ public class ForwardingTable {
 	 *         and to the specified Distance-Vector rule
 	 */
 	public String[][] makeVector(String recipient, boolean poisonedReverse, boolean addLost, boolean incremental) {
-		touched.clear();
 		String[][] res = new String[table.keySet().size()][2];
 
 		int i = 0;
-		if (recipient == null) {
-			for (String name : table.keySet()) {
-				if ((addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
-						&& (!incremental || hasUpdated(name))) {
-					res[i][0] = name;
-					res[i][1] = Integer.toString(table.get(name).getMetrics());
-					i++;
-				}
-			}
-		} else {
-			for (String name : table.keySet()) {
-				if ((addLost || table.get(name).getMetrics() < RouteEntry.INFINITY)
-						&& (!incremental || hasUpdated(name))
-						&& (poisonedReverse || !table.get(name).getRelay().equals(recipient))
-						&& !table.get(name).getDestination().equals(recipient)) {
-					res[i][0] = name;
-					if (poisonedReverse && table.get(name).getRelay().equals(recipient)) res[i][1] = Integer
-							.toString(RouteEntry.INFINITY);
-					else res[i][1] = Integer.toString(table.get(name).getMetrics());
-					i++;
-				}
+		for (String name : table.keySet()) {
+			RouteEntry re = table.get(name);
+			if ((addLost || re.getMetrics() < RouteEntry.INFINITY) && (!incremental || hasUpdated(name))
+					&& (poisonedReverse || !re.getRelay().equals(recipient)) && !name.equals(recipient)) {
+				res[i][0] = name;
+				if (poisonedReverse && re.getRelay().equals(recipient)) res[i][1] = Integer
+						.toString(RouteEntry.INFINITY);
+				else res[i][1] = Integer.toString(re.getMetrics());
+				i++;
 			}
 		}
 		if (i != table.keySet().size()) {
@@ -232,7 +219,8 @@ public class ForwardingTable {
 				res2[j][1] = res[j][1];
 			}
 			return res2;
-		} else return res;
+		}
+		return res;
 	}
 
 	public int getIndex(String[][] tab, String name) {
