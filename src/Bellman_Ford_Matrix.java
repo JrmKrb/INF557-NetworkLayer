@@ -39,20 +39,28 @@ public class Bellman_Ford_Matrix {
 	public boolean updateDistance(String destination, String relay, int newMetric) {
 		assert (!destination.equals(relay));
 		Couple c = getCouple(destination, relay);
-		int oldMetric = matrix.get(c);
+		int oldMetric = RouteEntry.INFINITY;
+		if (c == null) c = new Couple(destination, relay);
+		else oldMetric = matrix.get(c);
+
 		matrix.put(c, newMetric);
 		RouteEntry re = forwardingTable.get(destination);
-
-		if (newMetric < oldMetric) {
+		if (re == null) {
+			String newRelay = getBestRelay(destination);
+			forwardingTable.put(new RouteEntry(destination, newRelay, matrix.get(getCouple(destination, newRelay))));
+			return true;
+		} else if (newMetric < oldMetric) {
 			int oldBestMetric = re.getMetrics();
-			// If the new entry gives a better relay to get to {@code destination}
+			// If the new entry gives a better relay to get to {@code
+			// destination}
 			if (oldBestMetric > newMetric) {
 				forwardingTable.put(new RouteEntry(re.getDestination(), relay, newMetric));
 				return true;
 			}
 		} else if (newMetric > oldMetric) {
 			String oldRelay = re.getRelay();
-			// If the new entry cancel the best route we had before to get to {@code destination}
+			// If the new entry cancel the best route we had before to get
+			// to {@code destination}
 			if (oldRelay == relay) {
 				String newRelay = getBestRelay(destination);
 				forwardingTable
@@ -97,5 +105,15 @@ public class Bellman_Ford_Matrix {
 			}
 		}
 		return bestRelay;
+	}
+}
+
+class Couple {
+	public String destination;
+	public String relay;
+
+	public Couple(String d, String r) {
+		destination = d;
+		relay = r;
 	}
 }
