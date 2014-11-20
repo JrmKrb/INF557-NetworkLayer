@@ -15,17 +15,11 @@ public class Bellman_Ford_Matrix {
 	}
 
 	/**
-	 * Takes as a new information the existence of a route to a specified
-	 * {@code destination} at the specified {@code distance} via a specified
-	 * {@code relay}. Cases of a new destination or a new relay are handled
-	 * accordingly, adding entries as required. When a route to the given
-	 * destination via the given relay was already known, the distance is
-	 * updated with the new given value. <br/>
-	 * Next, one analyzes whether this changes the routing information. If so,
-	 * the routing table is updated and the method returns {@code true}.
-	 * Otherwise, the routing table is unchanged and the function returns
-	 * {@code false}. The returned value should then be checked for deciding of
-	 * the sending of a DV.
+	 * Takes as a new information the existence of a route to a specified {@code destination} at the specified {@code distance} via a specified {@code relay}.
+	 * Cases of a new destination or a new relay are handled accordingly, adding entries as required. When a route to the given destination via the given relay
+	 * was already known, the distance is updated with the new given value. <br/>
+	 * Next, one analyzes whether this changes the routing information. If so, the routing table is updated and the method returns {@code true}. Otherwise, the
+	 * routing table is unchanged and the function returns {@code false}. The returned value should then be checked for deciding of the sending of a DV.
 	 * 
 	 * @param destination
 	 *            the name of the destination node
@@ -33,8 +27,7 @@ public class Bellman_Ford_Matrix {
 	 *            the name of the relay that realizes the route
 	 * @param newMetric
 	 *            the distance for the given destination
-	 * @return {@code true} when sending a DV is required, and {@code false}
-	 *         otherwise
+	 * @return {@code true} when sending a DV is required, and {@code false} otherwise
 	 */
 	public boolean updateDistance(String destination, String relay, int newMetric) {
 		assert (!destination.equals(relay));
@@ -42,50 +35,58 @@ public class Bellman_Ford_Matrix {
 		int oldMetric = RouteEntry.INFINITY;
 		if (c == null) c = new Couple(destination, relay);
 		else oldMetric = matrix.get(c);
+		boolean res = false;
 
 		matrix.put(c, newMetric);
 		RouteEntry re = forwardingTable.get(destination);
 		if (re == null) {
 			String newRelay = getBestRelay(destination);
 			forwardingTable.put(new RouteEntry(destination, newRelay, matrix.get(getCouple(destination, newRelay))));
-			return true;
+			res = true;
 		} else if (newMetric < oldMetric) {
 			int oldBestMetric = re.getMetrics();
 			// If the new entry gives a better relay to get to {@code
 			// destination}
 			if (oldBestMetric > newMetric) {
 				forwardingTable.put(new RouteEntry(re.getDestination(), relay, newMetric));
-				return true;
+				res = true;
 			}
 		} else if (newMetric > oldMetric) {
 			String oldRelay = re.getRelay();
 			// If the new entry cancel the best route we had before to get
 			// to {@code destination}
-			if (oldRelay == relay) {
+			if (oldRelay.equals(relay)) {
 				String newRelay = getBestRelay(destination);
 				forwardingTable
 						.put(new RouteEntry(destination, newRelay, matrix.get(getCouple(destination, newRelay))));
-				return true;
+				res = true;
 			}
 		}
-		return false;
+		dump(System.out);
+		return res;
 	}
 
 	/**
-	 * Dumps the whole content of this structure onto the specified
-	 * {@code PrintStream}. The display order and format are not specified.
+	 * Dumps the whole content of this structure onto the specified {@code PrintStream}. The display order and format are not specified.
 	 * 
 	 * @param out
 	 *            the stream on which the content is printed
 	 */
 	public void dump(PrintStream out) {
-		for (Couple c : matrix.keySet())
-			out.print("Route to " + c.destination + " via " + c.relay + " has a metric of " + matrix.get(c) + ".");
+		out.println("\n\n====================");
+		out.println("BFM: " + myName);
+		for (String d : forwardingTable.destinations()) {
+			out.println("Routes to " + d + ":");
+			for (Couple c : matrix.keySet())
+				if (c.destination.equals(d)) out.println("Route to " + c.destination + " via " + c.relay + ": "
+						+ matrix.get(c) + ".");
+		}
+		out.println("====================\n\n");
 	}
 
 	public Couple getCouple(String dest, String rel) {
 		for (Couple c : matrix.keySet())
-			if (c.destination == dest && c.relay == rel) return c;
+			if (c.destination.equals(dest) && c.relay.equals(rel)) return c;
 		return null;
 	}
 
@@ -96,7 +97,7 @@ public class Bellman_Ford_Matrix {
 		int minMetric = -1;
 		String bestRelay = null;
 		for (Couple c : matrix.keySet()) {
-			if (c.destination == dest) {
+			if (c.destination.equals(dest)) {
 				int potMetric = matrix.get(c);
 				if (potMetric < minMetric || minMetric == -1) {
 					minMetric = potMetric;

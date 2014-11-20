@@ -198,6 +198,7 @@ public class ForwardingTable {
 	 *         and to the specified Distance-Vector rule
 	 */
 	public String[][] makeVector(String recipient, boolean poisonedReverse, boolean addLost, boolean incremental) {
+		dump(System.out);
 		String[][] res = new String[table.keySet().size()][2];
 
 		int i = 0;

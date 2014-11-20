@@ -152,7 +152,8 @@ public class NetworkLayer implements Layer {
 						for (String neighbor : removed) {
 							linkState.remove(neighbor);
 							// We also handle this according to the DV protocol
-							if (distancesMatrix.updateDistance(neighbor, neighbor, RouteEntry.INFINITY)) updated = true;
+							for (String d : forwardingTable.destinations())
+								if (distancesMatrix.updateDistance(d, neighbor, RouteEntry.INFINITY)) updated = true;
 						}
 						linkState.dump(System.out);
 						// We propagate the loss of neighbors
@@ -212,13 +213,14 @@ public class NetworkLayer implements Layer {
 	 */
 	private void sendVector(String cause, boolean incremental) {
 		System.out.println("sendVector() called: " + cause);
-
-		for (String v : linkState.neighbors()) {
-			Packet vectorsPacket = makeVectorPacket(v, cause, incremental);
-			send(vectorsPacket);
+		for (String n : linkState.neighbors()) {
+			Packet vectorsPacket = makeVectorPacket(n, cause, incremental);
+			if (vectorsPacket != null) {
+				Link l = linkState.getLinkFor(n);
+				if (l != null) l.send(vectorsPacket);
+			}
 		}
 
-		// TODO: WHY ?
 		forwardingTable.clearUpdated();
 	}
 
@@ -280,7 +282,7 @@ public class NetworkLayer implements Layer {
 
 		// We check if it results in an update of de BFM
 		for (String[] v : vector)
-			if (distancesMatrix.updateDistance(v[0], source, Integer.parseInt(v[1]))) updated = true;
+			if (distancesMatrix.updateDistance(v[0], source, Integer.parseInt(v[1]) + 1)) updated = true;
 		if (updated) sendVector("Updated vector received from" + source + ".", true);
 	}
 
